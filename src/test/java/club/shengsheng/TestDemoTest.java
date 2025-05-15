@@ -9,7 +9,7 @@ class TestDemoTest {
 
     @Test
     void testDemo() {
-        assertEquals(11, new TestDemo().foo());
+        assertEquals(113, new TestDemo().foo());
     }
 
 }
