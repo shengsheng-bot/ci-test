@@ -6,15 +6,15 @@ on:
 
 jobs:
   wait-for-approval:
+    name: 等待审批CI
     if: github.event.action == 'opened' || github.event.action == 'synchronize'
     runs-on: ubuntu-latest
     steps:
       - name: Fail and indicate pending approval
         run: |
-          echo "CI waiting for approval. Add 'ci-approved' label to proceed."
+          echo "请等待审批CI"
           exit 1  
   
-  # 审批通过后的正式 CI 构建
   run-approved-ci:
     if: github.event.action == 'labeled' && github.event.label.name == 'ci-approved'
     runs-on: ubuntu-latest
