@@ -1,4 +1,4 @@
-name: shengsheng CI
+name: CI with Label Gate
 
 on:
   pull_request_target:
@@ -6,16 +6,30 @@ on:
 
 jobs:
   wait-for-approval:
-    name: 等待审批CI
+    name: ⏳ 等待审批 CI
     if: github.event.action == 'opened' || github.event.action == 'synchronize'
     runs-on: ubuntu-latest
     steps:
-      - name: Fail and indicate pending approval
+      - name: Check for ci-approved label
+        id: check-label
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const labels = await github.rest.issues.listLabelsOnIssue({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number
+            });
+            const hasLabel = labels.data.some(label => label.name === 'ci-approved');
+            core.setOutput('approved', hasLabel);
+      - name: Fail if not approved
+        if: steps.check-label.outputs.approved != 'true'
         run: |
-          echo "请等待审批CI"
-          exit 1  
-  
+          echo "❌ CI 未被批准。请等待标签 'ci-approved' "
+          exit 1
+
   run-approved-ci:
+    name: run test
     if: github.event.action == 'labeled' && github.event.label.name == 'ci-approved'
     runs-on: ubuntu-latest
     steps:
