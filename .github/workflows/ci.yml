@@ -1,46 +1,31 @@
-name: CI with Label Gate
+name: CI Pipeline
 
 on:
-  pull_request_target:
-    types: [opened, synchronize, labeled]
+  pull_request:
+    branches: [ main ]
 
 jobs:
-  wait-for-approval:
-    name: ⏳ 等待审批 CI
-    if: github.event.action == 'opened' || github.event.action == 'synchronize'
+  check-ci-approve:
     runs-on: ubuntu-latest
     steps:
-      - name: Check for ci-approved label
-        id: check-label
+      - name: Check for ci-approve label
         uses: actions/github-script@v7
         with:
           script: |
-            const labels = await github.rest.issues.listLabelsOnIssue({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              issue_number: context.issue.number
-            });
-            const hasLabel = labels.data.some(label => label.name === 'ci-approved');
-            core.setOutput('approved', hasLabel);
-      - name: Fail if not approved
-        if: steps.check-label.outputs.approved != 'true'
-        run: |
-          echo "❌ CI 未被批准。请等待标签 'ci-approved' "
-          exit 1
+            const labels = context.payload.pull_request.labels.map(label => label.name);
+            if (!labels.includes('ci-approve')) {
+              core.setFailed('请等待 ci-approve 标签');
+            }
 
-  run-approved-ci:
-    name: run test
-    if: github.event.action == 'labeled' && github.event.label.name == 'ci-approved'
+  run-tests:
+    needs: check-ci-approve 
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-
-      - name: Set up Java
-        uses: actions/setup-java@v3
+      - uses: actions/checkout@v4
+      - name: Set up JDK
+        uses: actions/setup-java@v4
         with:
-          java-version: '17'
-          distribution: 'temurin'
-
+          java-version: '17' 
+          distribution: 'temurin' 
       - name: Run Maven Tests
-        run: mvn -B clean test
+        run: mvn test
