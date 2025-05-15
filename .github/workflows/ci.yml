@@ -1,11 +1,13 @@
 name: CI Pipeline
 
 on:
-  pull_request:
+  pull_request_target:
     branches: [ main ]
+    types: [ opened, synchronize, labeled ]
 
 jobs:
   check-ci-approve:
+    name: 等待 ci-approve 标签
     runs-on: ubuntu-latest
     steps:
       - name: Check for ci-approve label
