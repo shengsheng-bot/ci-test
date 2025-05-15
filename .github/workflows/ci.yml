@@ -1,20 +1,25 @@
-name: CI with Label Gate
+name: shengsheng CI
 
 on:
-  pull_request:
-    branches: [ main ]
+  pull_request_target:
+    types: [opened, synchronize, labeled]
 
 jobs:
-  approve-workflow-run:
-    name: Approve CI
-    # Even though job conditionals are difficult to debug, this will reduce the number of unnecessary runs
-    if:
-      github.event_name == 'pull_request_target' &&
-      github.event.action == 'labeled' &&
-      github.event.label.name == 'ci-approved'
+  wait-for-approval:
+    if: github.event.action == 'opened' || github.event.action == 'synchronize'
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
+      - name: Fail and indicate pending approval
+        run: |
+          echo "CI waiting for approval. Add 'ci-approved' label to proceed."
+          exit 1  
+  
+  # 审批通过后的正式 CI 构建
+  run-approved-ci:
+    if: github.event.action == 'labeled' && github.event.label.name == 'ci-approved'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
         uses: actions/checkout@v3
 
       - name: Set up Java
@@ -25,5 +30,3 @@ jobs:
 
       - name: Run Maven Tests
         run: mvn -B clean test
-
-  
