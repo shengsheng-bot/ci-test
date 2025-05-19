@@ -6,7 +6,7 @@ package club.shengsheng;
 public class TestDemo {
 
     public int foo() {
-        // 这里这里
+        //  好好
         return 1;
     }
 }
