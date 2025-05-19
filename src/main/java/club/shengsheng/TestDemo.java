@@ -6,7 +6,7 @@ package club.shengsheng;
 public class TestDemo {
 
     public int foo() {
-        // sdfsfssss
+        // 
         return 1;
     }
 }
