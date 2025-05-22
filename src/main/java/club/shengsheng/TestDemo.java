@@ -7,6 +7,6 @@ public class TestDemo {
 
     public int foo() {
         //  11
-        return 1;
+        return 2;
     }
 }
